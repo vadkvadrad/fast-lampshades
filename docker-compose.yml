@@ -26,9 +26,13 @@ services:
     command: >
       sh -c "
         cd /app &&
-        python -c 'import time; time.sleep(10); from app.database import engine, Base; Base.metadata.create_all(bind=engine)' &&
+        # Wait for database to be ready
+        python -c 'import time; time.sleep(10)' &&
+        # Run alembic migrations to create tables
         alembic upgrade head &&
-        python -c 'from app.database import SessionLocal; from app.models import Product; db = SessionLocal(); existing = db.query(Product).first(); db.close(); assert existing is None, \"Data already exists\"; from app.init_data import initialize_sample_data; initialize_sample_data()' &&
+        # Initialize sample data
+        python -c 'from app.init_data import initialize_sample_data; initialize_sample_data()' &&
+        # Start the FastAPI application
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
 
