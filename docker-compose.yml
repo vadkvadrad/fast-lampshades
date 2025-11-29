@@ -25,6 +25,7 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
     command: >
       sh -c "
+        cd /app &&
         python -c 'import time; time.sleep(10); from app.database import engine, Base; Base.metadata.create_all(bind=engine)' &&
         alembic upgrade head &&
         python -c 'from app.database import SessionLocal; from app.models import Product; db = SessionLocal(); existing = db.query(Product).first(); db.close(); assert existing is None, \"Data already exists\"; from app.init_data import initialize_sample_data; initialize_sample_data()' &&
